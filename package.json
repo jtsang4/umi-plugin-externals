@@ -1,6 +1,6 @@
 {
   "name": "umi-plugin-externals",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A umi plugin to help you make local built module as webpack external bundle.",
   "authors": "James Tsang <wentao_zeng1@163.com>",
   "repository": "https://github.com/wtzeng1/umi-plugin-externals",
