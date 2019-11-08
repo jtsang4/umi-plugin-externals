@@ -41,7 +41,7 @@ export default (api: IApi, opts: Options) => {
         ${
           Object.keys(opts).map(moduleName => {
             return `(() => {
-            ${fs.readFileSync(path.resolve(process.cwd(), opts[moduleName][1]), { encoding: 'utf8' })}
+            ${fs.readFileSync(api.winPath(path.resolve(process.cwd(), opts[moduleName][1])), { encoding: 'utf8' })}
             })();`;
           }).join('\n')
         }
