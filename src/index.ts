@@ -1,74 +1,54 @@
 import { IApi } from 'umi-types';
 import path from 'path';
-// import fs from 'fs';
+import fs from 'fs';
+import webpack from 'webpack';
 
 interface Options {
-  [moduleName: string]: [string | object | RegExp | Function, string];
+  [moduleName: string]: [string | object | RegExp | Function, string]; // 数组的第二项是本地 external 模块路径
 }
 
 export default (api: IApi, opts: Options) => {
-  // const { paths } = api;
-  // const { absTmpDirPath } = paths;
-
-  const externals = {};
-  // webpack externals 配置
-  Object.keys(opts).forEach((moduleName: string) => {
-    externals[moduleName] = opts[moduleName][0];
-  });
-
-  // // 等待插入的模块字符串
-  // const externalsScript = Object.keys(opts)
-  //   .map((moduleName: string) => {
-  //     const filePath = api.winPath(path.resolve(process.cwd(), opts[moduleName][1]));
-  //     return fs.readFileSync(filePath, { encoding: 'utf8' });
-  //   })
-  //   .join('\n\n');
-
-  // 设置为 externals
-  api.chainWebpackConfig(webpackConfig => {
-    webpackConfig.merge({
-      externals: {
-        ...externals,
-      },
-    });
-    api.log.success('Successfully configure webpack externals:\n');
-    api.log.info('\n' + JSON.stringify(webpackConfig.toConfig().externals, null, 2) + '\n');
-  });
-
-  // const addHeadScript = () => {
-  //   const insertedFlag = '[umi-plugin-prepend]';
-  //   const umiFilePath = api.winPath(path.resolve(absTmpDirPath, './umi.js'));
-  //   const umijsContent = fs.readFileSync(umiFilePath, 'utf-8');
-  //   if (!umijsContent.includes(insertedFlag)) {
-  //     api.writeTmpFile('umi.js', `
-  //       // ${insertedFlag} start
-  //       (() => {
-  //         ${externalsScript}
-  //       })();
-  //       // ${insertedFlag} end
-  //
-  //       ${umijsContent}
-  //     `);
-  //   }
-  // };
-
   api.onOptionChange(newOpts => {
     opts = newOpts;
     api.rebuildTmpFiles();
   });
 
-  Object.keys(opts).map((moduleName: string) => {
-    const filePath = api.winPath(path.resolve(process.cwd(), opts[moduleName][1]));
-    api.addEntryPolyfillImports(() => {
-      return [{ source: filePath }];
-    });
+  const externals = {};
+  // webpack externals 配置
+  Object.keys(opts).forEach((moduleName: string) => {
+    if (!moduleName) {
+      throw new Error('[umi-plugin-externals]: The first item in array should be a valid webpack externals value.')
+    }
+    externals[moduleName] = opts[moduleName][0];
   });
 
-  // api.onBuildSuccessAsync(() => {
-  //   addHeadScript();
-  // });
-  //
-  // api.onDevCompileDone(({ isFirstCompile }) => {
-  //   addHeadScript();
-  // });
+  // 设置为 externals
+  api.chainWebpackConfig(config => {
+    config.merge({
+      externals: {
+        ...externals,
+      },
+    });
+    api.log.success('Successfully configure webpack externals:\n');
+    console.log(JSON.stringify(config.toConfig().externals, null, 2) + '\n');
+  });
+
+  // 直接插入模块代码到 output 的头部
+  api.chainWebpackConfig(config => {
+    config.plugin('external-module').use(webpack.BannerPlugin, [{
+      banner: `
+      (() => {
+        ${
+          Object.keys(opts).map(moduleName => {
+            return `(() => {
+            ${fs.readFileSync(path.resolve(process.cwd(), opts[moduleName][1]), { encoding: 'utf8' })}
+            })();`;
+          }).join('\n')
+        }
+      })();`,
+      raw: true,
+      entryOnly: true,
+      include: /umi\.js$/,
+    }]);
+  });
 };

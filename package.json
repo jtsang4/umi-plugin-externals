@@ -1,32 +1,34 @@
 {
-  "name": "umi-plugin-prepend",
+  "name": "umi-plugin-externals",
   "version": "0.9.0",
-  "description": "",
-  "authors": {
-    "name": "wtzeng1",
-    "email": "wtzeng1@gmail.com"
-  },
-  "repository": "/umi-plugin-prepend",
-  "peerDependencies": {
-    "umi": "2.x || ^2.9.0-0"
-  },
-  "main":  "lib/index.js",
+  "description": "A umi plugin to help you make local built bundle as webpack external bundle.",
+  "authors": "James Tsang <wentao_zeng1@163.com>",
+  "repository": "https://github.com/wtzeng1/umi-plugin-externals",
+  "main": "lib/index.js",
+  "keywords": [
+    "umi",
+    "umijs",
+    "plugin"
+  ],
   "scripts": {
     "start": "cross-env APP_ROOT=$PWD/example umi dev",
-    "build":  "father-build",
+    "build": "father-build",
     "prepublishOnly": "npm run build && np --no-cleanup --yolo --no-publish"
+  },
+  "peerDependencies": {
+    "umi": "2.x || ^2.9.0-0",
+    "webpack": "^4.0.0"
   },
   "devDependencies": {
     "cross-env": "^6.0.3",
-    "father-build":  "^1.8.0",
+    "father-build": "^1.8.0",
     "np": "^5.0.3",
     "umi": "^2.9.0",
-    "umi-types": ">= 0.4.0-beta.4"
+    "umi-types": ">= 0.4.0-beta.4",
+    "webpack": "^4.41.2"
   },
   "files": [
-    "lib",
-    "src",
-    "ui"
+    "lib"
   ],
   "license": "MIT"
 }
