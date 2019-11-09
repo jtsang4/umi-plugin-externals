@@ -37,10 +37,10 @@ export default (api: IApi, opts: Options) => {
   api.chainWebpackConfig(config => {
     config.plugin('external-module').use(webpack.BannerPlugin, [{
       banner: `
-      (() => {
+      (function() {
         ${
           Object.keys(opts).map(moduleName => {
-            return `(() => {
+            return `(function() {
             ${fs.readFileSync(api.winPath(path.resolve(process.cwd(), opts[moduleName][1])), { encoding: 'utf8' })}
             })();`;
           }).join('\n')
